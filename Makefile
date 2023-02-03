@@ -17,11 +17,9 @@ dropdb:
 
 
 migrateup:
-	migrate -path db/migration -database "postgresql://postgres:postgres@localhost:5444/go_binance?sslmode=disable" -verbose up
+	go run migrate/migrate.go
 
 
-migratedown:
-	migrate -path db/migration -database "postgresql://postgres:postgres@localhost:5444/go_binance?sslmode=disable" -verbose down
 
 
 sqlc: 
@@ -45,4 +43,4 @@ server:
 devStart:
 	CompileDaemon -command="./Go-Binance"
 
-.PHONY: postgres createdb dropdb migratedown migrateup sqlc server commit devStart
+.PHONY: postgres createdb dropdb migrateup sqlc server commit devStart
