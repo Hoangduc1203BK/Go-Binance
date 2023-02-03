@@ -36,12 +36,13 @@ commit:
 	git commit -m"$t"
 	git push origin main
 
-
+pull:
+	git pull origin main
 
 server:
 	go run main.go
 
 devStart:
-	CompileDaemon -command="./go-go_binance"
+	CompileDaemon -command="./Go-Binance"
 
 .PHONY: postgres createdb dropdb migratedown migrateup sqlc server commit devStart
