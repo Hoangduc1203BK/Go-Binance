@@ -1,5 +1,5 @@
-postgres:
-	docker run --name goBinance -p 5444:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=postgresDB -d postgres
+postgres:u
+	docker run --name goBinance up 5444:5432 -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=postgresDB -d postgres
 
 createdb:
 # run on window
