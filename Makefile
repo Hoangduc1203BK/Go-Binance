@@ -41,4 +41,7 @@ commit:
 server:
 	go run main.go
 
-.PHONY: postgres createdb dropdb migratedown migrateup sqlc server commit
+devStart:
+	CompileDaemon -command="./go-go_binance"
+
+.PHONY: postgres createdb dropdb migratedown migrateup sqlc server commit devStart
