@@ -3,6 +3,7 @@ package users
 import (
 	"binance/database"
 	"binance/model"
+	"binance/util"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,12 @@ type createUserRequest struct {
 	Email       string `json:"email" binding:"required,email"`
 }
 
+type createUserResponse struct {
+	PhoneNumber string `json:"phone_number"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+}
+
 type updateUserRequest struct {
 	createUserRequest
 }
@@ -25,11 +32,15 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
+	hashPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	user := model.User{
 		Email:       req.Email,
 		Name:        req.Name,
-		Password:    req.Password,
+		Password:    hashPassword,
 		PhoneNumber: req.PhoneNumber}
 
 	result := database.DB.Create(&user)
@@ -38,8 +49,13 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	rsq := createUserResponse{
+		Name:        req.Name,
+		PhoneNumber: req.PhoneNumber,
+		Email:       req.Email,
+	}
 	c.JSON(200, gin.H{
-		"post": user,
+		"post": rsq,
 	})
 }
 
