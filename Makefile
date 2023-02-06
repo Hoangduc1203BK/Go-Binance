@@ -16,19 +16,6 @@ dropdb:
 # docker exec -it goBinance /bin/sh dropdb go_binance -U postgres
 
 
-migrateup:
-	go run migrate/migrate.go
-
-
-
-
-sqlc: 
-#  only run with cmd on window
-	docker run --rm -v /C/Users/Acer/Desktop/go-labs/src/github.com/user/simplebank:/src -w /src kjconroy/sqlc generate
-
-#  only run on ubuntu and macOS
-# docker run --rm -v "C:\Users\Acer\Desktop\go-labs\src\github.com\user\simplebank:/src" -w /src kjconroy/sqlc generate
- 
 commit:
 	git add .
 	git commit -m"$t"
