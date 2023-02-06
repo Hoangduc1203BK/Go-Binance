@@ -19,7 +19,9 @@ func main() {
 	router := gin.Default()
 
 	router.POST("/users", users.CreateUser)
-	router.GET("/users/:id", users.ListUser)
+	router.GET("/users/:id", users.ListUserByID)
+	router.PATCH("/users/:id", users.UpdateUserByID)
+	router.DELETE("/users/:id", users.DeleteUserByID)
 
 	router.Run(":" + os.Getenv("PORT"))
 }
