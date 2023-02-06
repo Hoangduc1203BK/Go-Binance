@@ -15,27 +15,26 @@ type createUserRequest struct {
 	Email       string `json:"email" binding:"required,email"`
 }
 
+type updateUserRequest struct {
+	createUserRequest
+}
+
 func CreateUser(c *gin.Context) {
 	var req createUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	var body struct {
-		Email       string
-		Name        string
-		Password    string
-		PhoneNumber string
-	}
-	c.Bind(&body)
+
 	user := model.User{
-		Email:       body.Email,
-		Name:        body.Name,
-		Password:    body.Password,
-		PhoneNumber: body.PhoneNumber}
+		Email:       req.Email,
+		Name:        req.Name,
+		Password:    req.Password,
+		PhoneNumber: req.PhoneNumber}
+
 	result := database.DB.Create(&user)
 	if result.Error != nil {
-		c.Status(400)
+		c.JSON(http.StatusBadRequest, errorResponse(result.Error))
 		return
 	}
 
@@ -55,18 +54,17 @@ func ListUserByID(c *gin.Context) {
 
 func UpdateUserByID(c *gin.Context) {
 	id := c.Param("id")
-	var body struct {
-		Email       string
-		Name        string
-		Password    string
-		PhoneNumber string
+	var req updateUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
 	}
-	c.Bind(&body)
+
 	inputUser := model.User{
-		Email:       body.Email,
-		Name:        body.Name,
-		Password:    body.Password,
-		PhoneNumber: body.PhoneNumber}
+		Email:       req.Email,
+		Name:        req.Name,
+		Password:    req.Password,
+		PhoneNumber: req.PhoneNumber}
 
 	var user model.User
 
@@ -87,22 +85,28 @@ func UpdateUserByID(c *gin.Context) {
 func DeleteUserByID(c *gin.Context) {
 	id := c.Param("id")
 
-	var user model.User
-	database.DB.First(&user, id)
-	if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
+	// var user model.User
+	// database.DB.First(&user, id)
+	// if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"message": "User not found",
+	// 	})
+	// 	return
+	// }
+
+	result := database.DB.Delete(&model.User{}, id)
+	if result.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "User not found",
+			"message": "invalid User ID",
 		})
 		return
 	}
 
-	database.DB.Delete(&model.User{}, id)
-
 	c.JSON(200, gin.H{
 		"post": "deleted Post ID: " + id,
-		// "Deleted User": user,
 	})
 }
+
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
 }
