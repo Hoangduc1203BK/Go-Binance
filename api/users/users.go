@@ -8,8 +8,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateUser(c *gin.Context) {
+type createUserRequest struct {
+	Name        string `json:"name" binding:"required,alphanum"`
+	Password    string `json:"password" binding:"required,min=6"`
+	PhoneNumber string `json:"phone_number" binding:"required,number,min=10"`
+	Email       string `json:"email" binding:"required,email"`
+}
 
+func CreateUser(c *gin.Context) {
+	var req createUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
 	var body struct {
 		Email       string
 		Name        string
@@ -91,4 +102,7 @@ func DeleteUserByID(c *gin.Context) {
 		"post": "deleted Post ID: " + id,
 		// "Deleted User": user,
 	})
+}
+func errorResponse(err error) gin.H {
+	return gin.H{"error": err.Error()}
 }
