@@ -1,11 +1,9 @@
 package users
 
 import (
-	"binance/database"
 	"binance/model"
 	"binance/util"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +11,6 @@ import (
 
 func ServiceCreateUser(req *createUserRequest, c *gin.Context) createUserResponse {
 
-	fmt.Println("ServiceCreateUser req ", req)
 	hashPassword, err := util.HashPassword(req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -28,7 +25,7 @@ func ServiceCreateUser(req *createUserRequest, c *gin.Context) createUserRespons
 }
 
 func ServiceListUserByID(c *gin.Context, id string) model.User {
-	user := RepositoryListUserByID(id)
+	user := RepositoryListUserByID(c, id)
 	return user
 }
 
@@ -45,29 +42,9 @@ func ServiceUpdateUserByID(c *gin.Context, id string, req *updateUserRequest) (m
 	return returnValue, nil
 }
 
-func ServiceDeleteUserByID(c *gin.Context) {
-	id := c.Param("id")
-
-	var user model.User
-	database.DB.First(&user, id)
-	if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "User not found",
-		})
-		return
-	}
-
-	result := database.DB.Delete(&model.User{}, id)
-	if result.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "invalid User ID",
-		})
-		return
-	}
-
-	c.JSON(200, gin.H{
-		"post": "deleted Post ID: " + id,
-	})
+func ServiceDeleteUserByID(c *gin.Context, id string) {
+	RepositoryDeleteUser(id, c)
+	return
 }
 
 func errorResponse(err error) gin.H {
