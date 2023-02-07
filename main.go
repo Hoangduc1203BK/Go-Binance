@@ -17,11 +17,9 @@ func main() {
 	database.ConnectionDatabase()
 	model.MigrateModel()
 	router := gin.Default()
+	apiv1 := router.Group("/api/v1")
 
-	router.POST("/users", users.CreateUser)
-	router.GET("/users/:id", users.ListUserByID)
-	router.PATCH("/users/:id", users.UpdateUserByID)
-	router.DELETE("/users/:id", users.DeleteUserByID)
+	users.InitRouter(apiv1)
 
 	router.Run(":" + os.Getenv("PORT"))
 }
