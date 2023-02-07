@@ -26,6 +26,11 @@ type updateUserRequest struct {
 	createUserRequest
 }
 
+type GetUserDto struct {
+	Email    string `validate:"required,email"`
+	Password string `validate:"required"`
+}
+
 func CreateUser(c *gin.Context) {
 	var req createUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
