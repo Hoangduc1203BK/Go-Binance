@@ -1,66 +1,55 @@
 package auth
 
 import (
-	"fmt"
+	"binance/api/users"
 	constance "binance/const"
 	"binance/model"
+	"fmt"
 	"time"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
-func HashPassword(password *string) (string, error) {
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(*password), 10)
+func LogInService(data *users.GetUserDto) (TokenType, error) {
+	result, err := users.ServiceGetUserByAuth(data)
 
-	return string(hashPassword), err
+	token := TokenType{
+		accessToken:  "",
+		refreshToken: "",
+	}
+
+	if err != nil {
+		return token, err
+	} else {
+		// generate access token
+		access, accessErr := GenerateToken(&result.Id, 1)
+
+		if accessErr != nil {
+			return token, accessErr
+		}
+		token.accessToken = access
+
+		// generate refresh token
+		refresh, refreshErr := GenerateToken(&result.Id, 2)
+		if refreshErr != nil {
+			return token, refreshErr
+		}
+		token.refreshToken = refresh
+
+		// save token to DB
+		exp := time.Now().Add(constance.REFRESH_TIME).Unix()
+		doc := model.Token{TokenString: refresh, UserId: result.Id, Blacklisted: false, Expires: exp}
+		tokenResult := CollectionInsertToken(&doc)
+
+		if tokenResult.Id == 0 {
+			return token, fmt.Errorf("Fail to insert refreshToken to db: %v", refresh)
+		}
+
+		return token, nil
+	}
 }
-
-func ComparePassword(password *string, hashPassword *string) error {
-	err := bcrypt.CompareHashAndPassword([]byte(*hashPassword), []byte(*password))
-	return err
-}
-
-// func LogInService(data *users.GetUserDto) (TokenType, error) {
-// 	result, err := users.GetUserByAuth(data)
-
-// 	token := TokenType{
-// 		accessToken:  "",
-// 		refreshToken: "",
-// 	}
-
-// 	if err != nil {
-// 		return token, err
-// 	} else {
-// 		// generate access token
-// 		access, accessErr := GenerateToken(&result.ID, 1)
-
-// 		if accessErr != nil {
-// 			return token, accessErr
-// 		}
-// 		token.accessToken = access
-
-// 		// generate refresh token
-// 		refresh, refreshErr := GenerateToken(&result.ID, 2)
-// 		if refreshErr != nil {
-// 			return token, refreshErr
-// 		}
-// 		token.refreshToken = refresh
-
-// 		// save token to DB
-// 		exp := time.Now().Add(constance.REFRESH_TIME).Unix()
-// 		doc := model.Token{TokenString: refresh, UserId: result.ID, Blacklisted: false, Expires: exp}
-// 		tokenResult := CollectionInsertToken(&doc)
-
-// 		if tokenResult.ID == 0 {
-// 			return token, fmt.Errorf("Fail to insert refreshToken to db: %v", refresh)
-// 		}
-
-// 		return token, nil
-// 	}
-// }
 
 func RefreshTokenService(refreshToken *string) (TokenType, error) {
 	decoded := DecodeToken(refreshToken)
+
 	tokenResponse := TokenType{
 		accessToken:  "",
 		refreshToken: "",
@@ -78,12 +67,12 @@ func RefreshTokenService(refreshToken *string) (TokenType, error) {
 
 			for _, t := range tokens {
 				blacklisted := false
-				CollectionUpdateToken(&t.ID, &blacklisted)
+				CollectionUpdateToken(&t.Id, &blacklisted)
 			}
 			return tokenResponse, fmt.Errorf("Invalid refresh token")
 		} else {
 			blacklisted := false
-			CollectionUpdateToken(&token.ID, &blacklisted)
+			CollectionUpdateToken(&token.Id, &blacklisted)
 			userId := decoded["sub"].(float64)
 			parseId := uint(userId)
 
@@ -107,7 +96,7 @@ func RefreshTokenService(refreshToken *string) (TokenType, error) {
 			doc := model.Token{TokenString: refresh, UserId: parseId, Blacklisted: false, Expires: exp}
 			tokenResult := CollectionInsertToken(&doc)
 
-			if tokenResult.ID == 0 {
+			if tokenResult.Id == 0 {
 				return tokenResponse, fmt.Errorf("Fail to insert refreshToken to db: %v", refresh)
 			}
 
@@ -119,7 +108,7 @@ func RefreshTokenService(refreshToken *string) (TokenType, error) {
 func LogOutService(refreshToken *string) error {
 	token := CollectionFindToken(refreshToken)
 
-	if token.Blacklisted == true {
+	if token.Id == 0 || token.Blacklisted == true {
 		return fmt.Errorf("Invalid refresh token")
 	}
 

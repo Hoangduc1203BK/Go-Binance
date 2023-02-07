@@ -11,4 +11,5 @@ func init() {
 
 func MigrateModel() {
 	database.DB.AutoMigrate(&model.User{})
+	database.DB.AutoMigrate(&model.Token{})
 }

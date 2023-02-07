@@ -7,12 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type createUserRequest struct {
-	Name        string `json:"name" binding:"required,alphanum"`
-	Password    string `json:"password" binding:"required,min=6"`
-	PhoneNumber string `json:"phone_number" binding:"required,number,min=10"`
-	Email       string `json:"email" binding:"required,email"`
-}
+
 
 func ControllerCreateUser(c *gin.Context) {
 	var req createUserRequest

@@ -9,6 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func RepositoryGetUserByAuth(email *string) model.User {
+	var user model.User
+	database.DB.Where("email = ?", email).First(&user)
+
+	return user
+}
+
 func RepositoryCreateUser(req *createUserRequest, hashPassword string) (createUserResponse, error) {
 	user := model.User{
 		Email:       req.Email,
@@ -21,7 +28,9 @@ func RepositoryCreateUser(req *createUserRequest, hashPassword string) (createUs
 		return createUserResponse{}, result.Error
 	}
 
+	fmt.Println(&result)
 	rsq := createUserResponse{
+		Id:          int(user.Id),
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
 		Email:       req.Email,
@@ -52,5 +61,6 @@ func RepositoryUpdateUser(req *updateUserRequest, user model.User, id string, c 
 		return false, model.User{}
 	}
 	database.DB.First(&user, id).Updates(inputUser)
+	fmt.Println("aaaa",inputUser)
 	return true, inputUser
 }

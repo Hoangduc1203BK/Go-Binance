@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"fmt"
 	"binance/database"
 	"binance/model"
+	"fmt"
 )
 
 func CollectionInsertToken(data *model.Token) model.Token {
@@ -14,10 +14,10 @@ func CollectionInsertToken(data *model.Token) model.Token {
 	return token
 }
 
-func CollectionFindToken(token *string) model.Token {
+func CollectionFindToken(token *string) (model.Token) {
 	var result model.Token
-	database.DB.Where("token_string = ?", token).First(&result)
-
+	database.DB.Where("token_string = ? ", *token).First(&result)
+	
 	return result
 }
 
