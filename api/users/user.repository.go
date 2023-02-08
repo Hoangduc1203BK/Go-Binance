@@ -28,9 +28,7 @@ func RepositoryCreateUser(req *createUserRequest, hashPassword string) (createUs
 		return createUserResponse{}, result.Error
 	}
 
-	fmt.Println(&result)
 	rsq := createUserResponse{
-		Id:          int(user.Id),
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
 		Email:       req.Email,
@@ -38,9 +36,14 @@ func RepositoryCreateUser(req *createUserRequest, hashPassword string) (createUs
 	return rsq, nil
 }
 
-func RepositoryListUserByID(id string) model.User {
+func RepositoryListUserByID(c *gin.Context, id string) model.User {
 	var user model.User
 	database.DB.First(&user, id)
+	if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "User not found",
+		})
+	}
 	return user
 }
 
@@ -61,6 +64,29 @@ func RepositoryUpdateUser(req *updateUserRequest, user model.User, id string, c 
 		return false, model.User{}
 	}
 	database.DB.First(&user, id).Updates(inputUser)
-	fmt.Println("aaaa",inputUser)
 	return true, inputUser
+}
+
+func RepositoryDeleteUser(id string, c *gin.Context) {
+	var user model.User
+	database.DB.First(&user, id)
+	if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "User not found",
+		})
+		return
+	}
+
+	result := database.DB.Delete(&model.User{}, id)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "invalid User ID",
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"post": "deleted Post ID: " + id,
+	})
+	return
 }

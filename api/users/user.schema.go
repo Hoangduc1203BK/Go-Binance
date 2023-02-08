@@ -1,7 +1,6 @@
 package users
 
 
-
 type createUserResponse struct {
 	Id 			int    `json: Id`
 	PhoneNumber string `json:"phone_number"`
@@ -20,7 +19,6 @@ type GetUserDto struct {
 	Email    string `validate:"required,email"`
 	Password string `validate:"required"`
 }
-
 
 type createUserRequest struct {
 	Name        string `json:"name" binding:"required,alphanum"`

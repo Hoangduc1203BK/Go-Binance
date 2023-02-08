@@ -1,13 +1,10 @@
 package users
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
-
-
 
 func ControllerCreateUser(c *gin.Context) {
 	var req createUserRequest
@@ -15,8 +12,11 @@ func ControllerCreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	fmt.Println("ControllerCreateUser req ", req)
 	result := ServiceCreateUser(&req, c)
+	if result.Email == "" {
+		c.JSON(500, gin.H{"message": "cannot create a User as incomming creatorial"})
+		return
+	}
 	c.JSON(200, gin.H{
 		"user": result,
 	})
@@ -39,10 +39,10 @@ func ControllerUpdateUserByID(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-	
+
 	user, err := ServiceUpdateUserByID(c, id, &req)
-	if  err!= nil  {
-		return 
+	if err != nil {
+		return
 	}
 	c.JSON(200, gin.H{
 		"user": user,
@@ -51,5 +51,8 @@ func ControllerUpdateUserByID(c *gin.Context) {
 }
 
 func ControllerDeleteUserByID(c *gin.Context) {
+	id := c.Param("id")
+	ServiceDeleteUserByID(c, id)
 
+	return
 }
