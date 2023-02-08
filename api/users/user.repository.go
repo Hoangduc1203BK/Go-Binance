@@ -3,10 +3,18 @@ package users
 import (
 	"binance/database"
 	"binance/model"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+func RepositoryGetUserByAuth(email *string) model.User {
+	var user model.User
+	database.DB.Where("email = ?", email).First(&user)
+
+	return user
+}
 
 func RepositoryCreateUser(req *createUserRequest, hashPassword string) (createUserResponse, error) {
 	user := model.User{
@@ -47,6 +55,7 @@ func RepositoryUpdateUser(req *updateUserRequest, user model.User, id string, c 
 		Password:    req.Password,
 		PhoneNumber: req.PhoneNumber}
 
+	fmt.Println("RepositoryUpdateUser >>>>>>>>", inputUser)
 	database.DB.First(&user, id)
 	if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
 		c.JSON(http.StatusBadRequest, gin.H{

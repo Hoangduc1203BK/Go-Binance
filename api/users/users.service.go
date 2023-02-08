@@ -4,6 +4,7 @@ import (
 	"binance/model"
 	"binance/util"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,8 +25,23 @@ func ServiceCreateUser(req *createUserRequest, c *gin.Context) createUserRespons
 	return rsq
 }
 
+func ServiceGetUserByAuth(data *GetUserDto) (model.User, error) {
+	result := RepositoryGetUserByAuth(&data.Email)
+
+	if result.Id == 0 {
+		return result, fmt.Errorf("User not found")
+	}
+
+	err2 := util.CheckPassword(data.Password, result.Password)
+
+	if err2 != nil {
+		return result, fmt.Errorf("Invalid password")
+	}
+
+	return result, nil
+}
 func ServiceListUserByID(c *gin.Context, id string) model.User {
-	user := RepositoryListUserByID(c, id)
+	user := RepositoryListUserByID(c,id)
 	return user
 }
 

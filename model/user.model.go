@@ -9,4 +9,5 @@ type User struct {
 	Name        string
 	Password    string
 	PhoneNumber string 
+	Tokens      []Token `gorm:"foreignKey:UserId;references:Id"`
 }
