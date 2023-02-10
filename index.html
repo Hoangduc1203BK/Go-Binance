@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  </head>
+
+  <body>
+    <h3>WebSocket Go</h3>
+    <input type="text"/>
+    <button id="btn">Send</button>
+    <ul id="list-msg"></ul>
+    <pre id="output"></pre>
+
+    <script>
+      url = 'ws://localhost:4000/ws';
+      c = new WebSocket(url);
+      c2 = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@ticker")
+
+      // let inp = document.querySelector("input")
+      // let btn = document.querySelector("#btn")
+      // let listMsg = document.querySelector("#list-msg")
+      // btn.addEventListener("click", () => {
+      //   const msg = inp.value;
+      //   const payload = new Date() + "===>" + msg +"\n"
+      //   const li = document.createElement("li")
+      //   li.innerText = payload
+      //   listMsg.append(li)
+      //   c.send(msg)
+      // })
+
+      // c.onmessage = function (msg) {
+      //   const li = document.createElement("li")
+      //   li.innerText = msg.data
+      //   listMsg.append(li)
+      // }
+
+      // c.onopen = function (msg) {
+      //   c.send("ping")
+      // }
+
+      c2.onmessage = (msg) => {
+        console.log("====>"+msg.data);
+      }
+      c2.onopen = () => {
+        console.log('Ws connection is open');
+      }
+
+      c2.onclose = () => {
+        console.log('Ws connection is close');
+      }
+    </script>
+
+  </body>
+</html>
