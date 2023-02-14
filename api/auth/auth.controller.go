@@ -2,6 +2,7 @@ package auth
 
 import (
 	"binance/api/users"
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +31,7 @@ func LogIn(c *gin.Context) {
 }
 
 func RefreshToken(c *gin.Context) {
+	fmt.Println(c.Keys)
 	refreshToken, _ := c.Cookie("refreshToken")
 	result, err := RefreshTokenService(&refreshToken)
 
@@ -67,3 +69,4 @@ func LogOut(c *gin.Context) {
 		"success": true,
 	})
 }
+

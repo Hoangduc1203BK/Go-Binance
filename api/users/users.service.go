@@ -10,6 +10,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func ServiceListUser(payload *listUserDto) []model.User {
+	users := RepositoryListUser(payload)
+
+	return users
+}
+
 func ServiceCreateUser(req *createUserRequest, c *gin.Context) createUserResponse {
 
 	hashPassword, err := util.HashPassword(req.Password)
@@ -28,7 +34,7 @@ func ServiceCreateUser(req *createUserRequest, c *gin.Context) createUserRespons
 func ServiceGetUserByAuth(data *GetUserDto) (model.User, error) {
 	result := RepositoryGetUserByAuth(&data.Email)
 
-	if result.Id == 0 {
+	if result.Id == 0 || result.DeletedAt.Valid == true {
 		return result, fmt.Errorf("User not found")
 	}
 
@@ -40,12 +46,18 @@ func ServiceGetUserByAuth(data *GetUserDto) (model.User, error) {
 
 	return result, nil
 }
-func ServiceListUserByID(c *gin.Context, id string) model.User {
-	user := RepositoryListUserByID(c,id)
-	return user
+
+func ServiceGetUserByID(c *gin.Context, userId uint) (interface{}, error) {
+	user := RepositoryGetUserByID(c, userId)
+
+	if user.Id == 0 || user.DeletedAt.Valid == true {
+		return nil, fmt.Errorf("User not found")
+	}
+
+	return user, nil
 }
 
-func ServiceUpdateUserByID(c *gin.Context, id string, req *updateUserRequest) (model.User, error) {
+func ServiceUpdateUserByID(c *gin.Context, id uint, req *updateUserRequest) (model.User, error) {
 	var user model.User
 
 	shouldReturn, returnValue := RepositoryUpdateUser(req, user, id, c)

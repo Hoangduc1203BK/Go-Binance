@@ -111,6 +111,5 @@ func ServiceListTokenPrice(payload *ListTokenPriceDTO) ([]Token, error) {
 		}
 	}
 
-	fmt.Println(tokens)
 	return tokens, nil
 }
