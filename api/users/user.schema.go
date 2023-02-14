@@ -1,8 +1,11 @@
 package users
 
-
+type listUserDto struct {
+	Page  int "json: page"
+	Limit int "json: limit"
+}
 type createUserResponse struct {
-	Id 			int    `json: Id`
+	Id          int    `json: Id`
 	PhoneNumber string `json:"phone_number"`
 	Name        string `json:"name"`
 	Email       string `json:"email"`
@@ -26,7 +29,3 @@ type createUserRequest struct {
 	PhoneNumber string `json:"phone_number" binding:"required,number,min=10"`
 	Email       string `json:"email" binding:"required,email"`
 }
-
-// type updateUserRequest struct {
-	
-// }
