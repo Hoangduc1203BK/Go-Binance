@@ -6,8 +6,9 @@ import (
 
 func InitRouter(router *gin.RouterGroup) {
 	userRouter := router.Group("/users")
-	userRouter.POST("", ControllerCreateUser)
-	userRouter.GET("/:id", ControllerListUserByID)
+	userRouter.POST("/", ControllerCreateUser)
+	userRouter.GET("/",ControllerListUser)
+	userRouter.GET("/:id", ControllerGetUserByID)
 	userRouter.PATCH("/:id", ControllerUpdateUserByID)
 	userRouter.DELETE("/:id", ControllerDeleteUserByID)
 }

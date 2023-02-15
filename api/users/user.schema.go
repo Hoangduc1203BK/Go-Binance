@@ -1,13 +1,21 @@
 package users
 
+type listUserDto struct {
+	Page  int "json: page"
+	Limit int "json: limit"
+}
 type createUserResponse struct {
+	Id          int    `json: Id`
 	PhoneNumber string `json:"phone_number"`
 	Name        string `json:"name"`
 	Email       string `json:"email"`
 }
 
 type updateUserRequest struct {
-	createUserRequest
+	Name        string `json:"name" ,alphanum"`
+	Password    string `json:"password" ,min=6"`
+	PhoneNumber string `json:"phone_number" ,number,min=10"`
+	Email       string `json:"email" ,email"`
 }
 
 type GetUserDto struct {

@@ -4,10 +4,17 @@ import (
 	"binance/model"
 	"binance/util"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+func ServiceListUser(payload *listUserDto) []model.User {
+	users := RepositoryListUser(payload)
+
+	return users
+}
 
 func ServiceCreateUser(req *createUserRequest, c *gin.Context) createUserResponse {
 
@@ -24,12 +31,33 @@ func ServiceCreateUser(req *createUserRequest, c *gin.Context) createUserRespons
 	return rsq
 }
 
-func ServiceListUserByID(c *gin.Context, id string) model.User {
-	user := RepositoryListUserByID(c, id)
-	return user
+func ServiceGetUserByAuth(data *GetUserDto) (model.User, error) {
+	result := RepositoryGetUserByAuth(&data.Email)
+
+	if result.Id == 0 || result.DeletedAt.Valid == true {
+		return result, fmt.Errorf("User not found")
+	}
+
+	err2 := util.CheckPassword(data.Password, result.Password)
+
+	if err2 != nil {
+		return result, fmt.Errorf("Invalid password")
+	}
+
+	return result, nil
 }
 
-func ServiceUpdateUserByID(c *gin.Context, id string, req *updateUserRequest) (model.User, error) {
+func ServiceGetUserByID(c *gin.Context, userId uint) (interface{}, error) {
+	user := RepositoryGetUserByID(c, userId)
+
+	if user.Id == 0 || user.DeletedAt.Valid == true {
+		return nil, fmt.Errorf("User not found")
+	}
+
+	return user, nil
+}
+
+func ServiceUpdateUserByID(c *gin.Context, id uint, req *updateUserRequest) (model.User, error) {
 	var user model.User
 
 	shouldReturn, returnValue := RepositoryUpdateUser(req, user, id, c)

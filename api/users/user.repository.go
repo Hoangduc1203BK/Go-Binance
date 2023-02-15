@@ -1,12 +1,43 @@
 package users
 
 import (
+	constance "binance/const"
 	"binance/database"
 	"binance/model"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+func RepositoryListUser(payload *listUserDto) []model.User {
+	var params listUserDto
+	if payload.Page > 0 {
+		params.Page = payload.Page
+	} else {
+		params.Page = constance.DefaultPaging().Page
+	}
+
+	if payload.Limit > 0 {
+		params.Limit = payload.Limit
+	} else {
+		params.Limit = constance.DefaultPaging().Limit
+	}
+
+	offset := (params.Page - 1) * params.Limit
+
+	var users []model.User
+	database.DB.Limit(params.Limit).Offset(offset).Find(&users)
+
+	return users
+}
+
+func RepositoryGetUserByAuth(email *string) model.User {
+	var user model.User
+	database.DB.Where("email = ?", email).First(&user)
+
+	return user
+}
 
 func RepositoryCreateUser(req *createUserRequest, hashPassword string) (createUserResponse, error) {
 	user := model.User{
@@ -28,25 +59,22 @@ func RepositoryCreateUser(req *createUserRequest, hashPassword string) (createUs
 	return rsq, nil
 }
 
-func RepositoryListUserByID(c *gin.Context, id string) model.User {
+func RepositoryGetUserByID(c *gin.Context, id uint) model.User {
 	var user model.User
 	database.DB.First(&user, id)
-	if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "User not found",
-		})
-	}
 	return user
 }
 
-func RepositoryUpdateUser(req *updateUserRequest, user model.User, id string, c *gin.Context) (bool, model.User) {
+func RepositoryUpdateUser(req *updateUserRequest, user model.User, id uint, c *gin.Context) (bool, model.User) {
 
 	inputUser := model.User{
+		Id:          id,
 		Email:       req.Email,
 		Name:        req.Name,
 		Password:    req.Password,
 		PhoneNumber: req.PhoneNumber}
 
+	fmt.Println("RepositoryUpdateUser >>>>>>>>", inputUser)
 	database.DB.First(&user, id)
 	if user.Email == "" || user.Name == "" || user.Password == "" || user.PhoneNumber == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
